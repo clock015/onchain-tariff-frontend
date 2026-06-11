@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { UnderlyingTokenWidget } from "@/components/features/underlying/UnderlyingTokenWidget";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -29,7 +30,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
           </div>
-          <ConnectButton />
+          <div className="flex items-center gap-3">
+            <div className="hidden md:block">
+              <UnderlyingTokenWidget />
+            </div>
+            <ConnectButton />
+          </div>
         </div>
       </nav>
 

@@ -6,6 +6,19 @@
   },
   {
     "type": "function",
+    "name": "QUOTA_PERIOD",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "UPGRADE_INTERFACE_VERSION",
     "inputs": [],
     "outputs": [
@@ -51,53 +64,27 @@
   },
   {
     "type": "function",
-    "name": "challengeMerchant",
+    "name": "calculateAMM",
     "inputs": [
       {
         "name": "merchant",
         "type": "address",
         "internalType": "address"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "challengePeriod",
-    "inputs": [],
-    "outputs": [
+      },
       {
-        "name": "",
+        "name": "amount",
         "type": "uint256",
         "internalType": "uint256"
       }
     ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "challenges",
-    "inputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
     "outputs": [
       {
-        "name": "challenger",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "stake",
+        "name": "deltaW",
         "type": "uint256",
         "internalType": "uint256"
       },
       {
-        "name": "endTime",
+        "name": "deltaS",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -116,6 +103,30 @@
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claimable",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "actualClaim",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "newAvailableQuota",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -145,6 +156,25 @@
         "name": "",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAvailableQuota",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -210,6 +240,44 @@
   },
   {
     "type": "function",
+    "name": "lastAvailableQuota",
+    "inputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "lastClaimTime",
+    "inputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "merchants",
     "inputs": [
       {
@@ -230,9 +298,14 @@
         "internalType": "bool"
       },
       {
-        "name": "beneficiary",
+        "name": "interactionTarget",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "K",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -265,6 +338,19 @@
   },
   {
     "type": "function",
+    "name": "quotaRatio",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "registerMerchant",
     "inputs": [
       {
@@ -273,7 +359,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "beneficiary",
+        "name": "interactionTarget",
         "type": "address",
         "internalType": "address"
       }
@@ -335,12 +421,12 @@
   },
   {
     "type": "function",
-    "name": "setVault",
+    "name": "setQuotaParams",
     "inputs": [
       {
-        "name": "_newVault",
-        "type": "address",
-        "internalType": "address"
+        "name": "_newRatio",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],
@@ -348,10 +434,10 @@
   },
   {
     "type": "function",
-    "name": "settleChallenge",
+    "name": "setVault",
     "inputs": [
       {
-        "name": "merchant",
+        "name": "_newVault",
         "type": "address",
         "internalType": "address"
       }
@@ -446,31 +532,6 @@
   },
   {
     "type": "event",
-    "name": "ChallengeSettled",
-    "inputs": [
-      {
-        "name": "merchant",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "challenger",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "slashedAmount",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
     "name": "Initialized",
     "inputs": [
       {
@@ -478,31 +539,6 @@
         "type": "uint64",
         "indexed": false,
         "internalType": "uint64"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "MerchantChallenged",
-    "inputs": [
-      {
-        "name": "merchant",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "challenger",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "endTime",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
       }
     ],
     "anonymous": false
@@ -537,13 +573,19 @@
         "internalType": "address"
       },
       {
-        "name": "beneficiary",
+        "name": "interactionTarget",
         "type": "address",
         "indexed": true,
         "internalType": "address"
       },
       {
         "name": "deposit",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "K",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
@@ -613,6 +655,18 @@
       },
       {
         "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "W",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "deltaS",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
