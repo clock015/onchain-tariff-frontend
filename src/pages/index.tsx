@@ -9,7 +9,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useClaimedAmount, useMerchants } from "@/hooks/useContractData";
+import {
+  useClaimedAmount,
+  useMerchants,
+  useTradeQuote,
+} from "@/hooks/useContractData";
 import { useMerchantRegistration } from "@/hooks/useMerchantRegistration";
 import { useTradeTransaction } from "@/hooks/useTradeTransaction";
 import { Plus, X } from "lucide-react";
@@ -58,10 +62,8 @@ export default function HomePage() {
   const merchantQuery = useMerchants(merchantAddress ? [merchantAddress] : []);
   const claimedQuery = useClaimedAmount(merchantAddress);
   const merchant = merchantQuery.data[0];
-  const trade = useTradeTransaction({
-    account,
-    amount,
-  });
+  const trade = useTradeTransaction({ account, amount });
+  const tradeQuote = useTradeQuote({ merchant: merchantAddress, amount });
   const merchantRegistration = useMerchantRegistration({
     account,
     depositAmount,
@@ -69,8 +71,6 @@ export default function HomePage() {
 
   const parsedAmount = toNumber(amount);
   const depositIsValid = toNumber(depositAmount) > 0;
-  const merchantProceeds = parsedAmount * 0.9;
-  const taxPoints = parsedAmount * 0.09;
   const governanceRights = parsedAmount * 0.01;
   const dataIsValid = tradeData !== undefined;
 
@@ -91,18 +91,13 @@ export default function HomePage() {
     !merchantRegistration.isReadingAllowance;
 
   useEffect(() => {
-    if (!merchantRegistration.isRegisterSuccess || !account) {
-      return;
-    }
-
+    if (!merchantRegistration.isRegisterSuccess || !account) return;
     setMerchantInput(account);
     setIsCreateMerchantOpen(false);
   }, [account, merchantRegistration.isRegisterSuccess]);
 
   const handlePrimaryAction = () => {
-    if (!account || !merchantAddress || !tradeData || parsedAmount <= 0) {
-      return;
-    }
+    if (!account || !merchantAddress || !tradeData || parsedAmount <= 0) return;
 
     if (trade.needsApproval) {
       trade.approve();
@@ -122,9 +117,7 @@ export default function HomePage() {
   };
 
   const handleCreateMerchant = () => {
-    if (!interactionTarget || !depositIsValid) {
-      return;
-    }
+    if (!interactionTarget || !depositIsValid) return;
 
     if (merchantRegistration.needsApproval) {
       merchantRegistration.approve();
@@ -154,11 +147,11 @@ export default function HomePage() {
     <Layout>
       <section className="mb-10 py-8">
         <h1 className="mb-3 text-4xl font-extrabold tracking-tight md:text-5xl">
-          去中心化 <span className="text-blue-500">10%-9%-1%</span> 交易协议
+          去中心原子化关税交易协议
         </h1>
         <p className="max-w-2xl text-zinc-400">
-          输入商家地址、支付金额和可选 data，页面会读取链上商家信息、历史 claimed
-          数据，并在交易前自动检查 USDC 授权额度。
+          输入商家地址、支付金额和可选 data，页面会读取链上商家信息、历史
+          claimed 数据，并在交易前自动检查 USDC 授权额度。
         </p>
       </section>
 
@@ -310,15 +303,15 @@ export default function HomePage() {
 
               <div className="space-y-2 rounded-md border border-zinc-800 bg-zinc-950 p-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500">商家所得 (90%)</span>
+                  <span className="text-zinc-500">商家收入 deltaW (AMM)</span>
                   <span className="font-mono text-green-400">
-                    +{formatAmount(merchantProceeds)} USDC
+                    +{formatAmount(toNumber(tradeQuote.data.deltaW))} USDC
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500">退税积分 (9%)</span>
+                  <span className="text-zinc-500">税和积分 deltaS (AMM)</span>
                   <span className="font-mono text-blue-400">
-                    +{formatAmount(taxPoints)} USDC
+                    +{formatAmount(toNumber(tradeQuote.data.deltaS))} USDC
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -327,6 +320,14 @@ export default function HomePage() {
                     +{formatAmount(governanceRights)} USDC
                   </span>
                 </div>
+                {tradeQuote.isLoading && (
+                  <p className="text-xs text-zinc-500">正在读取 AMM 报价...</p>
+                )}
+                {tradeQuote.isError && (
+                  <p className="text-xs text-red-300">
+                    AMM 报价读取失败：{tradeQuote.error?.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1 text-xs text-zinc-500">

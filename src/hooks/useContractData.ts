@@ -1,7 +1,7 @@
 import finalGovernorAbiJson from "../../abis/FinalGovernor.json";
 import marketAbiJson from "../../abis/Market.json";
 import proportionalElectionAbiJson from "../../abis/ProportionalElection.json";
-import { type Abi, type Address, formatUnits } from "viem";
+import { type Abi, type Address, formatUnits, parseUnits } from "viem";
 import { useReadContract, useReadContracts } from "wagmi";
 
 // ========= 固定合约配置 =========
@@ -52,7 +52,15 @@ export type ContractMerchant = {
 	address: Address;
 	interactionTarget: Address;
 	deposit: string;
+	k: string;
 	active: boolean;
+};
+
+export type TradeQuote = {
+	deltaW: string;
+	deltaS: string;
+	rawDeltaW: bigint;
+	rawDeltaS: bigint;
 };
 
 export type ContractProposal = {
@@ -160,6 +168,14 @@ const formatTokenAmount = (value: unknown, decimals: number) =>
 const hasRealAddress = (address?: Address) =>
 	Boolean(address) && address !== ZERO_ADDRESS;
 
+const parseTokenAmount = (amount: string) => {
+	try {
+		return parseUnits(amount || "0", TOKEN_DECIMALS);
+	} catch {
+		return 0n;
+	}
+};
+
 // ========= 查询账户积分 =========
 // 只依赖 account。钱包地址变化时，只会重新读取 buyerPoints / sellerPoints。
 export function useAccountPoints(account?: Address) {
@@ -253,15 +269,16 @@ export function useMerchants(merchantAddresses: Address[] = []) {
 
 	const merchants = merchantAddresses.map((merchantAddress, index) => {
 		const merchant = data?.[index]?.result;
-		const [deposit, isActive, interactionTarget] = Array.isArray(merchant)
+		const [deposit, isActive, interactionTarget, k] = Array.isArray(merchant)
 			? merchant
-			: [0n, false, undefined];
+			: [0n, false, undefined, 0n];
 
 		return {
 			id: index + 1,
 			address: merchantAddress,
 			interactionTarget: readAddress(interactionTarget) ?? ZERO_ADDRESS_TYPED,
 			deposit: formatTokenAmount(deposit, TOKEN_DECIMALS),
+			k: formatTokenAmount(k, TOKEN_DECIMALS),
 			active: Boolean(isActive),
 		};
 	});
@@ -277,6 +294,48 @@ export function useMerchants(merchantAddresses: Address[] = []) {
 
 // ========= 查询治理提案 =========
 // 每个 proposalId 读取 5 个字段：状态、票数、快照、截止时间、提案人。
+// ========= 查询交易 AMM 报价 =========
+// calculateAMM 返回恒定乘积公式下的商家收入 deltaW 和税/卖方积分 deltaS。
+export function useTradeQuote({
+	merchant,
+	amount,
+}: {
+	merchant?: Address;
+	amount: string;
+}) {
+	const parsedAmount = parseTokenAmount(amount);
+	const enabled =
+		Boolean(merchant) && parsedAmount > 0n && hasRealAddress(MARKET_ADDRESS);
+
+	const { data, isLoading, isError, error, refetch } = useReadContract({
+		address: MARKET_ADDRESS,
+		abi: marketAbi,
+		functionName: "calculateAMM",
+		args: merchant ? [merchant, parsedAmount] : undefined,
+		query: {
+			enabled,
+		},
+	});
+
+	const [deltaW, deltaS] = Array.isArray(data) ? data : [0n, 0n];
+	const rawDeltaW = readBigInt(deltaW);
+	const rawDeltaS = readBigInt(deltaS);
+
+	return {
+		data: {
+			deltaW: formatTokenAmount(rawDeltaW, TOKEN_DECIMALS),
+			deltaS: formatTokenAmount(rawDeltaS, TOKEN_DECIMALS),
+			rawDeltaW,
+			rawDeltaS,
+		},
+		parsedAmount,
+		isLoading,
+		isError,
+		error,
+		refetch,
+	};
+}
+
 export function useProposals(proposalIds: bigint[] = []) {
 	const enabled =
 		proposalIds.length > 0 && hasRealAddress(GOVERNOR_ADDRESS);
