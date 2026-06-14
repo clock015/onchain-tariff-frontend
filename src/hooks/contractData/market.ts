@@ -94,7 +94,7 @@ export function useMerchants(merchantAddresses: Address[] = []) {
 
   const merchants = merchantAddresses.map((merchantAddress, index) => {
     const merchant = data?.[index]?.result;
-    const [deposit, isActive, interactionTarget, k] = Array.isArray(merchant)
+    const [deposit, isActive, interactionTarget, receivedFunds] = Array.isArray(merchant)
       ? merchant
       : [0n, false, undefined, 0n];
 
@@ -103,7 +103,7 @@ export function useMerchants(merchantAddresses: Address[] = []) {
       address: merchantAddress,
       interactionTarget: readAddress(interactionTarget) ?? ZERO_ADDRESS_TYPED,
       deposit: formatTokenAmount(deposit, TOKEN_DECIMALS),
-      k: formatTokenAmount(k, TOKEN_DECIMALS),
+      receivedFunds: formatTokenAmount(receivedFunds, TOKEN_DECIMALS),
       active: Boolean(isActive),
     };
   });

@@ -18,7 +18,7 @@ export type ContractMerchant = {
   address: Address;
   interactionTarget: Address;
   deposit: string;
-  k: string;
+  receivedFunds: string;
   active: boolean;
 };
 

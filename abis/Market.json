@@ -278,6 +278,19 @@
   },
   {
     "type": "function",
+    "name": "leverageFactor",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "merchants",
     "inputs": [
       {
@@ -303,7 +316,17 @@
         "internalType": "address"
       },
       {
-        "name": "K",
+        "name": "W",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "leverageFactor",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "virtualDepthRatio",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -421,6 +444,24 @@
   },
   {
     "type": "function",
+    "name": "setGlobalAMMParams",
+    "inputs": [
+      {
+        "name": "_leverage",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_depthRatio",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setQuotaParams",
     "inputs": [
       {
@@ -531,6 +572,19 @@
     "stateMutability": "view"
   },
   {
+    "type": "function",
+    "name": "virtualDepthRatio",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
     "type": "event",
     "name": "Initialized",
     "inputs": [
@@ -585,7 +639,7 @@
         "internalType": "uint256"
       },
       {
-        "name": "K",
+        "name": "W",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
